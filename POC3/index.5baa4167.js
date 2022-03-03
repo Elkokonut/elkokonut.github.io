@@ -520,10 +520,8 @@ function hmrAcceptRun(bundle, id) {
 
 },{}],"igcvL":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-var _os = require("os");
 var _arJs = require("./ar.js");
 var _arJsDefault = parcelHelpers.interopDefault(_arJs);
-var _tfjs = require("@tensorflow/tfjs");
 async function main() {
     var video = document.querySelector('video');
     if (navigator.mediaDevices.getUserMedia) navigator.mediaDevices.getUserMedia({
@@ -538,7 +536,6 @@ transform: scale(-1, 1); filter: FlipH;";
         streaming = false;
         video.addEventListener('playing', async function() {
             if (!streaming) {
-                console.log("here I am");
                 streaming = true;
                 render = await _arJsDefault.default(video);
                 requestAnimationFrame(render);
@@ -551,54 +548,6 @@ transform: scale(-1, 1); filter: FlipH;";
 }
 main();
 
-},{"os":"6yyXu","./ar.js":"4Pk5T","@tensorflow/tfjs":"fzTad","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}],"6yyXu":[function(require,module,exports) {
-exports.endianness = function() {
-    return 'LE';
-};
-exports.hostname = function() {
-    if (typeof location !== 'undefined') return location.hostname;
-    else return '';
-};
-exports.loadavg = function() {
-    return [];
-};
-exports.uptime = function() {
-    return 0;
-};
-exports.freemem = function() {
-    return Number.MAX_VALUE;
-};
-exports.totalmem = function() {
-    return Number.MAX_VALUE;
-};
-exports.cpus = function() {
-    return [];
-};
-exports.type = function() {
-    return 'Browser';
-};
-exports.release = function() {
-    if (typeof navigator !== 'undefined') return navigator.appVersion;
-    return '';
-};
-exports.networkInterfaces = exports.getNetworkInterfaces = function() {
-    return {
-    };
-};
-exports.arch = function() {
-    return 'javascript';
-};
-exports.platform = function() {
-    return 'browser';
-};
-exports.tmpdir = exports.tmpDir = function() {
-    return '/tmp';
-};
-exports.EOL = '\n';
-exports.homedir = function() {
-    return '/';
-};
-
-},{}]},["da5dG","igcvL"], "igcvL", "parcelRequire7c33")
+},{"./ar.js":"4Pk5T","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}]},["da5dG","igcvL"], "igcvL", "parcelRequire7c33")
 
 //# sourceMappingURL=index.5baa4167.js.map
