@@ -687,14 +687,14 @@ class BodyTrackerScene extends Scene {
         await this.pose_detector.init();
         console.log(`Loaded model:${this.pose_detector.detectorConfig.modelType}`);
         this.objects.push(new Cube("leftHandCube", [
-            10,
-            10,
-            10
+            20,
+            20,
+            20
         ], 65280, "left_wrist", this.scene));
         this.objects.push(new Cube("rightHandCube", [
-            10,
-            10,
-            10
+            20,
+            20,
+            20
         ], 255, "right_wrist", this.scene));
         for(var index in this.#keypoints_names)if (this.#keypoints_names[index].includes("left")) this.objects.push(new Disk(this.#keypoints_names[index], 16776960, this.scene));
         else this.objects.push(new Disk(this.#keypoints_names[index], 16711935, this.scene));
