@@ -520,10 +520,8 @@ function hmrAcceptRun(bundle, id) {
 
 },{}],"igcvL":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-var _os = require("os");
 var _arJs = require("./ar.js");
 var _arJsDefault = parcelHelpers.interopDefault(_arJs);
-var _tfjs = require("@tensorflow/tfjs");
 async function main() {
     var video = document.querySelector('video');
     if (navigator.mediaDevices.getUserMedia) navigator.mediaDevices.getUserMedia({
@@ -531,74 +529,41 @@ async function main() {
     }).then(async function(localMediaStream) {
         video.setAttribute('autoplay', 'autoplay');
         video.srcObject = localMediaStream;
-        video.style.cssText = "-moz-transform: scale(-1, 1); \
--webkit-transform: scale(-1, 1); -o-transform: scale(-1, 1); \
-transform: scale(-1, 1); filter: FlipH;";
-        // video.style.display = "none";
-        streaming = false;
+        video.style.display = "none";
+        var streaming = false;
         video.addEventListener('playing', async function() {
             if (!streaming) {
-                console.log("here I am");
                 streaming = true;
-                render = await _arJsDefault.default(video);
-                requestAnimationFrame(render);
+                var scene = new _arJsDefault.default(video);
+                await scene.init();
+                await scene.animate();
+                //sliders logic
+                var mcoff_slider = document.getElementById("mincutoff_slider");
+                var beta_slider = document.getElementById("beta_slider");
+                var mcoff_text = document.getElementById("mincutoff_text");
+                var beta_text = document.getElementById("beta_text");
+                mcoff_slider.oninput = function() {
+                    mcoff_text.innerHTML = "mcoff value: " + mcoff_slider.value / 1000;
+                    scene.objects.forEach((elm)=>{
+                        if (elm.euroFilter != null) elm.euroFilter.set_mcoff(mcoff_slider.value / 1000);
+                    });
+                };
+                beta_slider.oninput = function() {
+                    beta_text.innerHTML = "beta value: " + beta_slider.value / 100;
+                    scene.objects.forEach((elm)=>{
+                        if (elm.euroFilter != null) elm.euroFilter.set_beta(beta_slider.value / 100);
+                    });
+                };
+            //end of slider logic
             }
         }, false);
     }).catch(function(error) {
-        console.log("Something went wrong!");
+        console.log("Something went wrong!", error);
     });
     else console.log('Ce navigateur ne supporte pas la méthode getUserMedia');
 }
 main();
 
-},{"os":"6yyXu","./ar.js":"4Pk5T","@tensorflow/tfjs":"fzTad","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}],"6yyXu":[function(require,module,exports) {
-exports.endianness = function() {
-    return 'LE';
-};
-exports.hostname = function() {
-    if (typeof location !== 'undefined') return location.hostname;
-    else return '';
-};
-exports.loadavg = function() {
-    return [];
-};
-exports.uptime = function() {
-    return 0;
-};
-exports.freemem = function() {
-    return Number.MAX_VALUE;
-};
-exports.totalmem = function() {
-    return Number.MAX_VALUE;
-};
-exports.cpus = function() {
-    return [];
-};
-exports.type = function() {
-    return 'Browser';
-};
-exports.release = function() {
-    if (typeof navigator !== 'undefined') return navigator.appVersion;
-    return '';
-};
-exports.networkInterfaces = exports.getNetworkInterfaces = function() {
-    return {
-    };
-};
-exports.arch = function() {
-    return 'javascript';
-};
-exports.platform = function() {
-    return 'browser';
-};
-exports.tmpdir = exports.tmpDir = function() {
-    return '/tmp';
-};
-exports.EOL = '\n';
-exports.homedir = function() {
-    return '/';
-};
-
-},{}]},["da5dG","igcvL"], "igcvL", "parcelRequire7c33")
+},{"./ar.js":"4Pk5T","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}]},["da5dG","igcvL"], "igcvL", "parcelRequire7c33")
 
 //# sourceMappingURL=index.5baa4167.js.map

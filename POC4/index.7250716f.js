@@ -524,119 +524,205 @@ parcelHelpers.defineInteropFlag(exports);
 var _three = require("three");
 var _iaJs = require("./ia.js");
 var _iaJsDefault = parcelHelpers.interopDefault(_iaJs);
-function change_position2d(cube, keypoint, width, height) {
-    if (keypoint && keypoint.score > 0.85) {
-        cube.visible = true;
-        cube.position.x = keypoint.x - width / 2;
-        cube.position.y = -(keypoint.y - height / 2);
-    } else cube.visible = false;
-}
-function add_mesh_body(scene, mesh, video) {
-    const points = [];
-    mesh.forEach((keypoint)=>{
-        if (keypoint.score > 0.85) {
-            obj = scene.getObjectByName(keypoint.name);
-            if (!obj) {
-                material = null;
-                if (keypoint.name.includes("left")) material = new _three.MeshBasicMaterial({
-                    color: 16776960
-                });
-                else material = new _three.MeshBasicMaterial({
-                    color: 16711935
-                });
-                const geometry = new _three.CircleGeometry(5, 32);
-                const circle = new _three.Mesh(geometry, material);
-                circle.name = keypoint.name;
-                scene.add(circle);
-                obj = circle;
-            }
-            obj.visible = true;
-            obj.position.x = keypoint.x - width / 2;
-            obj.position.y = -(keypoint.y - height / 2);
-        } else {
-            obj = scene.getObjectByName(keypoint.name);
-            if (obj) obj.visible = false;
-        }
-    });
-}
-async function createScene(video) {
-    width = video.videoWidth;
-    height = video.videoHeight;
-    const scene = new _three.Scene();
-    scene.background = new _three.VideoTexture(video);
-    const camera = new _three.PerspectiveCamera(50, width / height, 0.1, 0);
-    const renderer = new _three.WebGLRenderer();
-    renderer.setSize(width, height);
-    document.body.appendChild(renderer.domElement);
-    // controls = new OrbitControls(camera, renderer.domElement);
-    // controls.enableDamping = true;
-    // controls.dampingFactor = 0.25;
-    // controls.enableZoom = true;
-    // const plane_geo = new THREE.PlaneGeometry(width, height);
-    // const videoTexture = new THREE.VideoTexture(video);
-    // videoTexture.flipX = false;
-    // const video_material = new THREE.MeshBasicMaterial( {map: videoTexture, side: THREE.DoubleSide} );
-    // const plane = new THREE.Mesh(plane_geo, video_material);
-    // plane.position.set(0, 0, 0)
-    // scene.add(plane);
-    const geometry = new _three.BoxGeometry();
-    const green = new _three.MeshBasicMaterial({
-        color: 65280
-    });
-    const green_cube = new _three.Mesh(geometry, green);
-    green_cube.scale.set(10, 10, 10);
-    green_cube.position.x = 2;
-    green_cube.name = "leftHandCube";
-    const red = new _three.MeshBasicMaterial({
-        color: 16711680
-    });
-    const red_cube = new _three.Mesh(geometry, red);
-    red_cube.scale.set(10, 10, 10);
-    red_cube.position.x = -2;
-    red_cube.name = "rightHandCube";
-    camera.lookAt(0, 0, 0);
-    const pose_detector = new _iaJsDefault.default(video);
-    await pose_detector.init();
-    const gridHelper = new _three.GridHelper(1000, 100, 16711680);
-    const axesHelper = new _three.AxesHelper(1000);
-    scene.add(axesHelper);
-    scene.add(gridHelper);
-    scene.add(green_cube);
-    scene.add(red_cube);
-    camera.position.z = height;
-    counter = 0;
-    async function animate() {
-        requestAnimationFrame(animate);
-        let right_depth_text = document.getElementById("right_depth_text");
-        let left_depth_text = document.getElementById("left_depth_text");
-        green_cube.rotation.x += 0.01;
-        green_cube.rotation.y += 0.01;
-        red_cube.rotation.x += 0.02;
-        red_cube.rotation.y += 0.01;
-        mesh = await pose_detector.predictFrameKeypoints2d();
-        if (mesh != null) {
-            add_mesh_body(scene, mesh, video);
-            left_keypoint = mesh.find((keypoint)=>keypoint.name == "left_wrist"
-            );
-            left_depth_text.innerText = `Left depth is ${left_keypoint.z}`;
-            change_position2d(green_cube, left_keypoint, width, height);
-            right_keypoint = mesh.find((keypoint)=>keypoint.name == "right_wrist"
-            );
-            right_depth_text.innerText = `Right depth is ${right_keypoint.z}`;
-            change_position2d(red_cube, right_keypoint, width, height);
-        } else {
-            green_cube.visible = false;
-            red_cube.visible = false;
-        }
-        // controls.update();
-        // console.log(camera.position)
-        renderer.render(scene, camera);
+var _oneEuroFilterJs = require("./oneEuroFilter.js");
+var _oneEuroFilterJsDefault = parcelHelpers.interopDefault(_oneEuroFilterJs);
+class Object3D {
+    constructor(obj, name, scene, position, scale){
+        this.scene = scene;
+        this.obj = obj;
+        this.obj.name = name;
+        this.type = "object3D";
+        if (position) this.obj.position.set(position[0], position[1], position[2]);
+        if (scale) this.obj.scale.set(scale[0], scale[1], scale[2]);
+        scene.add(this.obj);
     }
-    return animate;
 }
-exports.default = createScene;
+class BodyTrackerObject extends Object3D {
+    constructor(obj, name, scene, position, scale, keypoint_name){
+        super(obj, name, scene, position, scale);
+        this.obj.visible = false;
+        this.keypoint_name = keypoint_name;
+        this.euroFilter = null;
+        this.type = "BodyTrackerObject";
+    }
+    animate(mesh, width, height) {
+        if (mesh != null) this.change_position2d(mesh, width, height);
+        else this.obj.visible = false;
+    }
+    change_position2d(mesh, width, height) {
+        var keypoint1 = mesh.find((keypoint)=>keypoint.name == this.keypoint_name
+        );
+        if (keypoint1 && keypoint1.score > 0.9) {
+            this.obj.visible = true;
+            var x = keypoint1.x - width / 2;
+            var y = -(keypoint1.y - height / 2);
+            if (!this.euroFilter) this.euroFilter = new _oneEuroFilterJsDefault.default(x, y, Date.now(), 0.001, 1);
+            else {
+                var estimation = this.euroFilter.call(x, y);
+                if (estimation) {
+                    x = estimation[0];
+                    y = estimation[1];
+                }
+            }
+            this.obj.position.x = x;
+            this.obj.position.y = y;
+        } else this.obj.visible = false;
+    }
+}
+class Cube extends BodyTrackerObject {
+    constructor(name, scale, color, keypoint_name, scene){
+        const geometry = new _three.BoxGeometry();
+        const material = new _three.MeshBasicMaterial({
+            color: color
+        });
+        var cube = new _three.Mesh(geometry, material);
+        super(cube, name, scene, null, scale, keypoint_name);
+        this.cube = cube;
+        this.type = "cube";
+    }
+    animate(mesh, width, height) {
+        this.cube.rotation.x += 0.01;
+        this.cube.rotation.y += 0.01;
+        super.animate(mesh, width, height);
+    }
+}
+class Disk extends BodyTrackerObject {
+    constructor(name, color, scene){
+        const material = new _three.MeshBasicMaterial({
+            color: color
+        });
+        const geometry = new _three.CircleGeometry(5, 32);
+        var circle = new _three.Mesh(geometry, material);
+        super(circle, name, scene, null, null, name);
+        this.circle = circle;
+        this.type = "Disk";
+    }
+    animate(mesh, width, height) {
+        super.animate(mesh, width, height);
+    }
+}
+class Scene {
+    constructor(video){
+        this.video = video;
+        this.width = 0;
+        this.height = 0;
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.initialisation = false;
+        this.objects = [];
+    }
+    init(width = null, height = null) {
+        console.log("Init Scene");
+        this.width = width ? width : this.video.videoWidth;
+        this.height = height ? height : this.video.videoHeight;
+        this.scene = new _three.Scene();
+        this.scene.background = new _three.VideoTexture(this.video);
+        this.camera = new _three.PerspectiveCamera(50, this.width / this.height, 0.1, 0);
+        this.camera.position.z = this.height;
+        this.renderer = new _three.WebGLRenderer();
+        this.renderer.setSize(this.width, this.height);
+        document.body.appendChild(this.renderer.domElement);
+        document.querySelector('canvas').style = '-moz-transform: scale(-1, 1); -webkit-transform: scale(-1, 1); -o-transform: scale(-1, 1); transform: scale(-1, 1); filter: FlipH;';
+        this.camera.lookAt(0, 0, 0);
+        // this.addGridHelper();
+        this.initialisation = true;
+    }
+    addGridHelper() {
+        const gridHelper = new _three.GridHelper(1000, 100, 16711680);
+        const axesHelper = new _three.AxesHelper(1000);
+        this.scene.add(axesHelper);
+        this.scene.add(gridHelper);
+    }
+    animate() {
+        function render() {
+            requestAnimationFrame(this.animate);
+            this.renderer.render(this.scene, this.camera);
+        }
+        render();
+    }
+}
+class BodyTrackerScene extends Scene {
+    #keypoints_names = [
+        "nose",
+        "left_eye_inner",
+        "left",
+        "left_eye_outer",
+        "right_eye_inner",
+        "right_eye",
+        "right_eye_outer",
+        "left_ear",
+        "right_ear",
+        "mouth_left",
+        "mouth_right",
+        "left_shoulder",
+        "right_shoulder",
+        "left_elbow",
+        "right_elbow",
+        "left_wrist",
+        "right_wrist",
+        "left_pinky",
+        "right_pinky",
+        "left_index",
+        "right_index",
+        "left_thumb",
+        "right_thumb",
+        "left_hip",
+        "right_hip",
+        "left_knee",
+        "right_knee",
+        "left_ankle",
+        "right_ankle",
+        "left_heel",
+        "right_heel",
+        "left_foot_index",
+        "right_foot_index"
+    ];
+    constructor(video){
+        super(video);
+        this.pose_detector = new _iaJsDefault.default(video);
+    }
+    async init(width = null, height = null) {
+        super.init(width, height);
+        await this.pose_detector.init();
+        console.log(`Loaded model:${this.pose_detector.detectorConfig.modelType}`);
+        this.objects.push(new Cube("leftHandCube", [
+            10,
+            10,
+            10
+        ], 65280, "left_wrist", this.scene));
+        this.objects.push(new Cube("rightHandCube", [
+            10,
+            10,
+            10
+        ], 255, "right_wrist", this.scene));
+        for(var index in this.#keypoints_names)if (this.#keypoints_names[index].includes("left")) this.objects.push(new Disk(this.#keypoints_names[index], 16776960, this.scene));
+        else this.objects.push(new Disk(this.#keypoints_names[index], 16711935, this.scene));
+    }
+    async animate() {
+        var self = this;
+        if (this.initialisation == false) this.init();
+        this.renderer.setAnimationLoop(async ()=>{
+            var mesh = await self.pose_detector.predictFrameKeypoints2d();
+            self.objects.forEach((obj)=>{
+                obj.animate(mesh, self.width, self.height);
+            });
+            self.renderer.render(self.scene, self.camera);
+        });
+    // async function render() {
+    //     requestAnimationFrame(render);
+    //     var mesh = await self.pose_detector.predictFrameKeypoints2d();
+    //     self.objects.forEach(obj => {
+    //         obj.animate(mesh, self.width, self.height);
+    //     });
+    //     self.renderer.render(self.scene, self.camera);
+    // }
+    // await render();
+    }
+}
+exports.default = BodyTrackerScene;
 
-},{"three":"ktPTu","./ia.js":"9K5XS","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}],"ktPTu":[function(require,module,exports) {
+},{"three":"ktPTu","./ia.js":"9K5XS","./oneEuroFilter.js":"9lodn","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}],"ktPTu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ACESFilmicToneMapping", ()=>ACESFilmicToneMapping
@@ -30768,6 +30854,71 @@ if (typeof __THREE_DEVTOOLS__ !== 'undefined') __THREE_DEVTOOLS__.dispatchEvent(
 if (typeof window !== 'undefined') {
     if (window.__THREE__) console.warn('WARNING: Multiple instances of Three.js being imported.');
     else window.__THREE__ = REVISION;
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}],"9lodn":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function smoothing_factor(t_e, cutoff) {
+    var r = 2 * Math.PI * cutoff * t_e;
+    return r / (r + 1);
+}
+function exponential_smoothing(a, x, x_prev) {
+    return a * x + (1 - a) * x_prev;
+}
+class OneEuroFilter2D {
+    constructor(x0, y0, t0 = Date.now(), min_cutoff, beta){
+        this.xfilter = new OneEuroFilter(x0, t0, min_cutoff, beta);
+        this.yfilter = new OneEuroFilter(y0, t0, min_cutoff, beta);
+    }
+    call(x, y, t = Date.now()) {
+        return [
+            this.xfilter.call(x, t),
+            this.yfilter.call(y, t)
+        ];
+    }
+    set_mcoff(min_cutoff) {
+        this.xfilter.min_cutoff = min_cutoff;
+        this.yfilter.min_cutoff = min_cutoff;
+    }
+    set_beta(beta) {
+        this.xfilter.beta = beta;
+        this.yfilter.beta = beta;
+    }
+}
+exports.default = OneEuroFilter2D;
+class OneEuroFilter {
+    constructor(x0, t0, min_cutoff, beta){
+        // Initialize the one euro filter.
+        // The parameters.
+        this.min_cutoff = min_cutoff;
+        this.beta = beta;
+        this.d_cutoff = 0.001; // period in milliseconds, so default to 0.001 = 1Hz
+        // Previous values.
+        this.x_prev = x0;
+        this.dx_prev = 0;
+        this.t_prev = t0;
+    }
+    call(x, t = Date.now()) {
+        // Compute the filtered signal.
+        var t_e = t - this.t_prev;
+        if (t_e > this.d_cutoff) {
+            // The filtered derivative of the signal.
+            var a_d = smoothing_factor(t_e, this.d_cutoff);
+            var dx = (x - this.x_prev) / t_e;
+            var dx_hat = exponential_smoothing(a_d, dx, this.dx_prev);
+            // The filtered signal.
+            var cutoff = this.min_cutoff + this.beta * Math.abs(dx_hat);
+            var a = smoothing_factor(t_e, cutoff);
+            var x_hat = exponential_smoothing(a, x, this.x_prev);
+            // Memorize the previous values.
+            this.x_prev = x_hat;
+            this.dx_prev = dx_hat;
+            this.t_prev = t;
+            return x_hat;
+        }
+        return this.x_prev;
+    }
 }
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}]},["g4Cu7","4Pk5T"], "4Pk5T", "parcelRequire7c33")
