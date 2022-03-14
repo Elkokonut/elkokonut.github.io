@@ -522,8 +522,6 @@ function hmrAcceptRun(bundle, id) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _three = require("three");
-var _iaJs = require("./ia.js");
-var _iaJsDefault = parcelHelpers.interopDefault(_iaJs);
 var _oneEuroFilterJs = require("./oneEuroFilter.js");
 var _oneEuroFilterJsDefault = parcelHelpers.interopDefault(_oneEuroFilterJs);
 class Object3D {
@@ -707,7 +705,7 @@ class BodyTrackerScene extends Scene {
 }
 exports.default = BodyTrackerScene;
 
-},{"three":"ktPTu","./ia.js":"9K5XS","./oneEuroFilter.js":"9lodn","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}],"ktPTu":[function(require,module,exports) {
+},{"three":"ktPTu","./oneEuroFilter.js":"9lodn","@parcel/transformer-js/src/esmodule-helpers.js":"fD7H8"}],"ktPTu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "ACESFilmicToneMapping", ()=>ACESFilmicToneMapping

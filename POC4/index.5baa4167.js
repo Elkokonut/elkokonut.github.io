@@ -529,12 +529,14 @@ async function main() {
     }).then(async function(localMediaStream) {
         video.setAttribute('autoplay', 'autoplay');
         video.srcObject = localMediaStream;
-        video.style.display = "none";
         var streaming = false;
-        video.addEventListener('playing', async function() {
+        video.addEventListener('canplay', async function() {
             if (!streaming) {
+                // video.style.display = "none";
                 streaming = true;
                 var scene = new _arJsDefault.default(video);
+                video.style.display = "none";
+                video.play();
                 await scene.init();
                 await scene.animate();
                 //sliders logic
@@ -554,6 +556,7 @@ async function main() {
                         if (elm.euroFilter != null) elm.euroFilter.set_beta(beta_slider.value / 100);
                     });
                 };
+                video.play();
             //end of slider logic
             }
         }, false);

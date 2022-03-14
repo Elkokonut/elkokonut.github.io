@@ -533,13 +533,14 @@ async function main() {
         video.srcObject = localMediaStream;
         video.style.display = "none";
         var streaming = false;
-        video.addEventListener('playing', async function() {
+        video.addEventListener('canplay', async function() {
             if (!streaming) {
                 streaming = true;
                 var scene = new _arJsDefault.default(video);
                 scene.init();
                 var pose_detector = new _iaJsDefault.default(video);
                 await pose_detector.init();
+                video.play();
                 await pose_detector.mainLoop(scene);
             }
         }, false);
