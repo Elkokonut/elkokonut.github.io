@@ -566,6 +566,14 @@ if (navigator.mediaDevices.getUserMedia) navigator.mediaDevices.getUserMedia({
             scene.add(gridHelper);
             camera.position.z = 5;
             video.play();
+            document.querySelector('canvas').style = '-moz-transform: scale(-1, 1); \
+                                                    -webkit-transform: scale(-1, 1); \
+                                                    -o-transform: scale(-1, 1); \
+                                                    transform: scale(-1, 1); \
+                                                    filter: FlipH;\
+                                                    width: 100%; \
+                                                    max-width: 100%; \
+                                                    height: 100%;';
             requestAnimationFrame(render);
         }
     }, false);

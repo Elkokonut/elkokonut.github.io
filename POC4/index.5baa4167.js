@@ -532,7 +532,6 @@ async function main() {
         var streaming = false;
         video.addEventListener('canplay', async function() {
             if (!streaming) {
-                // video.style.display = "none";
                 streaming = true;
                 var scene = new _arJsDefault.default(video);
                 video.style.display = "none";

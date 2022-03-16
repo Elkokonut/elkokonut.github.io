@@ -545,7 +545,6 @@ class BodyTrackerObject extends Object3D {
     }
     animate(mesh, width, height) {
         if (mesh != null) this.change_position2d(mesh, width, height);
-        else this.obj.visible = false;
     }
     change_position2d(mesh, width, height) {
         var keypoint1 = mesh.find((keypoint)=>keypoint.name == this.keypoint_name
@@ -621,7 +620,14 @@ class Scene {
         this.renderer = new _three.WebGLRenderer();
         this.renderer.setSize(this.width, this.height);
         document.body.appendChild(this.renderer.domElement);
-        document.querySelector('canvas').style = '-moz-transform: scale(-1, 1); -webkit-transform: scale(-1, 1); -o-transform: scale(-1, 1); transform: scale(-1, 1); filter: FlipH;';
+        document.querySelector('canvas').style = '-moz-transform: scale(-1, 1); \
+                                                    -webkit-transform: scale(-1, 1); \
+                                                    -o-transform: scale(-1, 1); \
+                                                    transform: scale(-1, 1); \
+                                                    filter: FlipH;\
+                                                    width: 100%; \
+                                                    max-width: 100%; \
+                                                    height: 100%;';
         this.camera.lookAt(0, 0, 0);
         // this.addGridHelper();
         this.initialisation = true;
@@ -693,11 +699,18 @@ class BodyTrackerScene extends Scene {
         ], 255, "right_wrist", this.scene));
         for(var index in this.#keypoints_names)if (this.#keypoints_names[index].includes("left")) this.objects.push(new Disk(this.#keypoints_names[index], 16776960, this.scene));
         else this.objects.push(new Disk(this.#keypoints_names[index], 16711935, this.scene));
+        var nb_calls_render = 0;
+        setInterval(()=>{
+            document.getElementById("frameRateRender").innerHTML = 'Render FrameRate: ' + nb_calls_render;
+            nb_calls_render = 0;
+        }, 1000);
         this.renderer.setAnimationLoop(()=>{
+            nb_calls_render++;
+            this.move_objects(null);
             this.renderer.render(this.scene, this.camera);
         });
     }
-    async move_objects(mesh) {
+    move_objects(mesh) {
         this.objects.forEach((obj)=>{
             obj.animate(mesh, this.width, this.height);
         });
