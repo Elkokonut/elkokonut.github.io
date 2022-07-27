@@ -1,0 +1,38 @@
+.app {
+  width: 100vw;
+  height: 100vh;
+}
+
+.sidepanel {
+  z-index: 1;
+  height: 100vh;
+  width: 23vw;
+  background-color: #4baca3cc;
+  padding: 40px;
+  transition: all 1s;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.sidepanel a:hover {
+  color: #f1f1f1;
+}
+
+.sidepanel .closebtn {
+  margin-left: 50px;
+  font-size: 36px;
+  position: absolute;
+  top: 0;
+  right: 25px;
+}
+
+.sidepanel {
+  color: #fff;
+  font-family: Futura, Helvetica Neue, sans-serif;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+/*# sourceMappingURL=index.37c38c3c.css.map */
