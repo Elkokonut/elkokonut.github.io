@@ -689,8 +689,9 @@ class Model {
         ${this.addProgressBar()}
         ${this.addARButton("View in your space")}
         ${this.addARPrompt()}
-        ${this.addNoARButton("AR is not tracking")}
+        
         </model-viewer>`;
+        //${this.addNoARButton("AR is not tracking")}
         return html;
     }
     addModel() {
