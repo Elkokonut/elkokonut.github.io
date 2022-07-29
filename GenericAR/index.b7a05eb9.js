@@ -539,8 +539,6 @@ var _model = require("./object/Model");
 var _modelDefault = parcelHelpers.interopDefault(_model);
 var _sidepanel = require("./object/Sidepanel");
 var _sidepanelDefault = parcelHelpers.interopDefault(_sidepanel);
-var _target = require("./object/Target");
-var _targetDefault = parcelHelpers.interopDefault(_target);
 function getId() {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
@@ -553,8 +551,7 @@ function hasId() {
 function defaultBehavior() {
     const json = (0, _loadJSONDefault.default)();
     const model = new (0, _modelDefault.default)(json);
-    document.getElementById("app").innerHTML = model.toHTML();
-    (0, _targetDefault.default).addHotspotsEvents();
+    document.body.appendChild(model.toHTML());
 }
 function main() {
     globalThis.defaultRessourcesPath = "default/ressources/";
@@ -566,7 +563,7 @@ function closeNav() {
 }
 main();
 
-},{"./loadJSON":"8RRgo","./object/Model":"39wPA","./object/Sidepanel":"3ejpN","./object/Target":"5Fod3","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8RRgo":[function(require,module,exports) {
+},{"./loadJSON":"8RRgo","./object/Model":"39wPA","./object/Sidepanel":"3ejpN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8RRgo":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _cargoJson = require("../static/cargo/cargo.json");
@@ -657,16 +654,16 @@ exports.export = function(dest, destName, get) {
 },{}],"39wPA":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-var _target = require("./Target");
-var _targetDefault = parcelHelpers.interopDefault(_target);
+var _hotspot = require("./Hotspot");
+var _hotspotDefault = parcelHelpers.interopDefault(_hotspot);
 var _vector3 = require("./Vector3");
 var _vector3Default = parcelHelpers.interopDefault(_vector3);
 class Model {
     constructor(json){
         this.modelName = json.modelName;
-        this.annotations = [];
+        this.hotspots = [];
         json.targets.forEach((target)=>{
-            this.annotations.push(new (0, _targetDefault.default)((0, _vector3Default.default).fromJSON(target.position), target.normal ? (0, _vector3Default.default).fromJSON(target.normal) : null, target.label, target.type, target.content));
+            this.hotspots.push(new (0, _hotspotDefault.default)((0, _vector3Default.default).fromJSON(target.position), target.normal ? (0, _vector3Default.default).fromJSON(target.normal) : null, target.label, target.type, target.content));
         });
         this.poster = json.poster;
         this.arIcon = json.arIcon;
@@ -675,151 +672,82 @@ class Model {
         this.skybox = json.skybox == "true";
         this.animation = json.animation;
     }
+    createModelViewer() {
+        const mv = document.createElement("model-viewer");
+        mv.setAttribute("bounds", "tight");
+        mv.setAttribute("enable-pan", "");
+        mv.setAttribute("shadow-intensity", "1");
+        // Load model
+        mv.setAttribute("src", this.modelName);
+        // Enable AR
+        mv.setAttribute("ar", "");
+        mv.setAttribute("ar-modes", "webxr scene-viewer quick-look");
+        // Camera Controls
+        mv.setAttribute("camera-controls", "");
+        // Set poster
+        if (this.poster) mv.setAttribute("poster", this.poster);
+        // Set environment and skybox
+        if (this.environment) {
+            mv.setAttribute("environment-image", this.environment);
+            if (this.environment != "neutral" && this.skybox) mv.setAttribute("skybox-image", this.environment);
+        }
+        return mv;
+    }
     toHTML() {
-        const html = `<model-viewer 
-            bounds="tight" enable-pan shadow-intensity="1"
-            ${this.addModel()}
-            ${this.addAR()}
-            ${this.addCameraControls()}
-            ${this.addPoster()}
-            ${this.addEnvironment()}
-            
-        >
-        ${this.addAnnotations()}
-        ${this.addProgressBar()}
-        ${this.addARButton("View in your space")}
-        ${this.addARPrompt()}
-        
-        </model-viewer>`;
-        //${this.addNoARButton("AR is not tracking")}
-        return html;
+        const mv = this.createModelViewer();
+        const hotspots = this.getHotspots(mv);
+        hotspots.forEach((hs)=>{
+            mv.appendChild(hs);
+        });
+        mv.appendChild(this.ARButton("View in your space"));
+        mv.appendChild(this.ARPrompt());
+        mv.appendChild(this.progressBar());
+        return mv;
     }
-    addModel() {
-        return `src="${this.modelName}"`;
-    }
-    addEnvironment() {
-        let html = "";
-        if (this.environment) html += ` environment-image="${this.environment}";`;
-        if (this.environment != "neutral" && this.skybox) html += ` skybox-image="${this.environment}"`;
-        return html;
-    }
-    addAR() {
-        return `ar ar-modes="webxr scene-viewer quick-look"`;
-    }
-    addCameraControls() {
-        return "camera-controls";
-    }
-    addPoster() {
-        if (this.poster && this.poster.length > 0) return `poster="${this.poster}"`;
-        return "";
-    }
-    addARButton(text) {
-        const src = this.arIcon ? this.arIcon : `${globalThis.defaultRessourcesPath}/ar_icon.png`;
-        return `<button slot="ar-button" id="ar-button" style="background-image: url(${src});">
-        ${text}
-        </button>`;
+    ARButton(text) {
+        const imgSrc = this.arIcon ? this.arIcon : `${globalThis.defaultRessourcesPath}/ar_icon.png`;
+        const btn = document.createElement("button");
+        btn.setAttribute("id", "ar-button");
+        btn.setAttribute("slot", "ar-button");
+        btn.setAttribute("style", `background-image: url(${imgSrc});`);
+        btn.innerText = text;
+        return btn;
     }
     addNoARButton(text) {
         return `<button id="ar-failure">
         ${text}
       </button>`;
     }
-    addAnnotations() {
-        let html = "";
-        this.annotations.forEach((target)=>{
-            html += target.toHTML();
+    getHotspots(modelViewer) {
+        const hotspots = [];
+        this.hotspots.forEach((target)=>{
+            hotspots.push(target.toHTML(modelViewer));
         });
-        return html;
+        return hotspots;
     }
-    addARPrompt() {
+    ARPrompt() {
         const src = this.arPrompt ? this.arPrompt : `${globalThis.defaultRessourcesPath}/ar_hand_prompt.png"`;
-        return `<div id="ar-prompt"><img src="${src}"></div>`;
+        const prompt = document.createElement("div");
+        prompt.setAttribute("id", "ar-prompt");
+        const img = document.createElement("img");
+        img.setAttribute("src", src);
+        prompt.appendChild(img);
+        return prompt;
     }
-    addProgressBar() {
-        return `<div class="progress-bar hide" slot="progress-bar"><div class="update-bar"></div></div>`;
+    progressBar() {
+        const progressBar = document.createElement("div");
+        progressBar.classList.add("progress-bar");
+        progressBar.classList.add("hide");
+        progressBar.setAttribute("slot", "progress-bar");
+        const updateBar = document.createElement("div");
+        updateBar.classList.add("update-bar");
+        progressBar.appendChild(updateBar);
+        return progressBar;
     }
 }
 exports.default = Model;
 
-},{"./Target":"5Fod3","./Vector3":"iOfYs","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5Fod3":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _sidepanel = require("./Sidepanel");
-var _sidepanelDefault = parcelHelpers.interopDefault(_sidepanel);
-class Target {
-    static counter = 0;
-    constructor(position, normal, label, type, content){
-        this.position = position;
-        this.normal = normal;
-        this.label = label;
-        this.type = type;
-        this.slot = Target.counter++;
-        this.content = new (0, _sidepanelDefault.default)(content, this.slot);
-    }
-    toHTML() {
-        let html = `<button class="Hotspot"
-        slot="hotspot-${this.slot}"
-        data-position="${this.position.toHTML()}" `;
-        if (this.normal) html += `data-normal="${this.normal.toHTML()}"`;
-        html += `data-visibility-attribute="visible">\n`;
-        if (this.label) html += `<div class="HotspotAnnotation">${this.label}</div>\n`;
-        html += "</button>";
-        return html;
-    }
-    static addHotspotsEvents() {
-        // const app = document.getElementById(`app`);
-        // app.addEventListener('click', (target) => Sidepanel.hideAllSidepanels())
-        const hotspots = Array.from(document.getElementsByClassName("Hotspot"));
-        hotspots.forEach((hotspot)=>{
-            hotspot.addEventListener("click", function handleClick(event) {
-                const id = event.target.slot;
-                (0, _sidepanelDefault.default).showSidepanel(id);
-            });
-        });
-    }
-}
-exports.default = Target;
-
-},{"./Sidepanel":"3ejpN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3ejpN":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-class Sidepanel {
-    constructor(content, slot){
-        this.content = content;
-        this.slot = slot;
-        this.addContentAsSidepanel();
-    }
-    addContentAsSidepanel() {
-        const sidepanel = document.createElement("div");
-        sidepanel.classList.add("sidepanel");
-        sidepanel.id = `content-hotspot-${this.slot}`;
-        sidepanel.addEventListener("click", (event)=>Sidepanel.hideAllSidepanels());
-        const btn = document.createElement("a");
-        btn.classList.add("closebtn");
-        btn.addEventListener("click", (event)=>Sidepanel.hideAllSidepanels());
-        btn.href = "javascript: void(0)";
-        btn.innerText = "\xd7";
-        sidepanel?.appendChild(btn);
-        const p = document.createElement("p");
-        p.innerText = this.content;
-        sidepanel?.appendChild(p);
-        document.body.children[0]?.before(sidepanel);
-    }
-    static hideAllSidepanels() {
-        const sidepanels = document.querySelectorAll(".show");
-        Array.from(sidepanels).forEach((element)=>{
-            if (element) element.classList.remove("show");
-        });
-    }
-    static showSidepanel(id) {
-        Sidepanel.hideAllSidepanels();
-        const panel = document.getElementById(`content-${id}`);
-        if (panel) panel.classList.add("show");
-    }
-}
-exports.default = Sidepanel;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iOfYs":[function(require,module,exports) {
+},{"./Vector3":"iOfYs","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./Hotspot":"5aizH"}],"iOfYs":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 class Vector3 {
@@ -852,11 +780,91 @@ class Vector3 {
         this.z = z;
         return this;
     }
-    toHTML() {
+    toString() {
         return `${this.x}m ${this.y}m ${this.z}m`;
     }
 }
 exports.default = Vector3;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5aizH":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sidepanel = require("./Sidepanel");
+var _sidepanelDefault = parcelHelpers.interopDefault(_sidepanel);
+class Hotspot {
+    static counter = 0;
+    constructor(position, normal, label, type, content){
+        this.position = position;
+        this.normal = normal;
+        this.label = label;
+        this.type = type;
+        this.slot = Hotspot.counter++;
+        this.content = content; // ? new Sidepanel(content, this.slot, document.body) : null;
+    }
+    toHTML(parent) {
+        const btn = document.createElement("button");
+        btn.classList.add("Hotspot");
+        btn.setAttribute("slot", `hotspot-${this.slot}`);
+        btn.setAttribute("data-position", this.position.toString());
+        if (this.normal) btn.setAttribute("data-normal", this.normal.toString());
+        btn.setAttribute("data-visibility-attribute", "visible");
+        if (this.label) {
+            const label = document.createElement("div");
+            label.innerText = this.label;
+            label.classList.add("HotspotAnnotation");
+            btn.appendChild(label);
+        }
+        if (this.content) {
+            new (0, _sidepanelDefault.default)(this.content, this.slot, parent);
+            btn.addEventListener("click", function handleClick(event) {
+                const id = this.slot;
+                (0, _sidepanelDefault.default).showSidepanel(id);
+            });
+        }
+        return btn;
+    }
+}
+exports.default = Hotspot;
+
+},{"./Sidepanel":"3ejpN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3ejpN":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class Sidepanel {
+    constructor(content, slot, parent){
+        this.content = content;
+        this.slot = slot;
+        this.addContentAsSidepanel(parent);
+    }
+    addContentAsSidepanel(parent) {
+        const sidepanel = document.createElement("div");
+        sidepanel.classList.add("sidepanel");
+        sidepanel.id = `content-hotspot-${this.slot}`;
+        sidepanel.addEventListener("click", (event)=>Sidepanel.hideAllSidepanels());
+        const btn = document.createElement("a");
+        btn.classList.add("closebtn");
+        btn.addEventListener("click", (event)=>Sidepanel.hideAllSidepanels());
+        btn.href = "javascript: void(0)";
+        btn.innerText = "\xd7";
+        sidepanel?.appendChild(btn);
+        const p = document.createElement("p");
+        p.innerText = this.content;
+        sidepanel?.appendChild(p);
+        parent.appendChild(sidepanel);
+    }
+    static hideAllSidepanels() {
+        const sidepanels = document.querySelectorAll(".show");
+        Array.from(sidepanels).forEach((element)=>{
+            if (element) element.classList.remove("show");
+        });
+    }
+    static showSidepanel(id) {
+        const panel = document.getElementById(`content-${id}`);
+        const show = panel && !panel.classList.contains("show");
+        Sidepanel.hideAllSidepanels();
+        if (show) panel.classList.add("show");
+    }
+}
+exports.default = Sidepanel;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["84Rv8","jeorp"], "jeorp", "parcelRequire94c2")
 
