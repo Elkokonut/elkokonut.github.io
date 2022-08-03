@@ -142,14 +142,14 @@
       this[globalName] = mainExports;
     }
   }
-})({"9SXn1":[function(require,module,exports) {
+})({"g9YSt":[function(require,module,exports) {
 "use strict";
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "d6ea1d42532a7575";
-module.bundle.HMR_BUNDLE_ID = "e77af7d1490c95fe";
+module.bundle.HMR_BUNDLE_ID = "a6b4915d9ec2cfcb";
 /* global HMR_HOST, HMR_PORT, HMR_ENV_HASH, HMR_SECURE, chrome, browser, globalThis, __parcel__import__, __parcel__importScripts__, ServiceWorkerGlobalScope */ /*::
 import type {
   HMRAsset,
@@ -531,20 +531,431 @@ function hmrAcceptRun(bundle, id) {
     acceptedAssets[id] = true;
 }
 
-},{}],"7VQOF":[function(require,module,exports) {
-// Handles loading the events for <model-viewer>'s slotted progress bar
-const onProgress = (event)=>{
-    const progressBar = event.target.querySelector(".progress-bar");
-    const updatingBar = event.target.querySelector(".update-bar");
-    updatingBar.style.width = `${event.detail.totalProgress * 100}%`;
-    if (event.detail.totalProgress === 1) progressBar.classList.add("hide");
-    else {
-        progressBar.classList.remove("hide");
-        if (event.detail.totalProgress === 0) event.target.querySelector(".center-pre-prompt")?.classList.add("hide");
+},{}],"7FMHY":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+var _loadJSON = require("./loadJSON");
+var _loadJSONDefault = parcelHelpers.interopDefault(_loadJSON);
+var _model = require("./object/Model");
+var _modelDefault = parcelHelpers.interopDefault(_model);
+var _sidepanel = require("./object/Sidepanel");
+var _sidepanelDefault = parcelHelpers.interopDefault(_sidepanel);
+var _route = require("./object/Route");
+var _routeDefault = parcelHelpers.interopDefault(_route);
+function displayModel(id) {
+    const json = (0, _loadJSONDefault.default)(id);
+    if (json) {
+        const model = new (0, _modelDefault.default)(json);
+        document.body.appendChild(model.toHTML());
     }
+}
+function main() {
+    globalThis.defaultRessourcesPath = "default";
+    displayModel((0, _routeDefault.default).chooseRoute());
+}
+function closeNav() {
+    (0, _sidepanelDefault.default).hideAllSidepanels();
+}
+main();
+
+},{"./loadJSON":"jpGlc","./object/Model":"lwyQj","./object/Sidepanel":"8vxsk","./object/Route":"cJRl7","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jpGlc":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _modelType = require("./interface/modelType");
+var _json = require("../../static/json/*.json");
+function fileExtension(filename) {
+    return filename.split(".").pop();
+}
+function validateModelFile(modelName) {
+    const autorizedExtensions = [
+        "glb",
+        "gltf"
+    ];
+    return autorizedExtensions.includes(fileExtension(modelName));
+}
+function validateIosSrc(iosSrc) {
+    const autorizedExtensions = [
+        "usdz"
+    ];
+    return !iosSrc || autorizedExtensions.includes(fileExtension(iosSrc));
+}
+function validateEnvironment(environment) {
+    const autorizedExtensions = [
+        "hdr",
+        "jpg",
+        "jpeg"
+    ];
+    return !environment || environment == "neutral" || autorizedExtensions.includes(fileExtension(environment));
+}
+function validatePoster(poster) {
+    const autorizedExtensions = [
+        "webp",
+        "png",
+        "jpg",
+        "jpeg"
+    ];
+    return !poster || autorizedExtensions.includes(fileExtension(poster));
+}
+function validateData(data) {
+    return validateModelFile(data.modelName) && validateIosSrc(data.iosSrc) && validateEnvironment(data.environment) && validatePoster(data.posters);
+}
+function loadJSON(id) {
+    const data = _json[id];
+    if (data && (0, _modelType.instanceOfModelType)(data) && validateData(data)) return data;
+    return null;
+}
+exports.default = loadJSON;
+
+},{"./interface/modelType":"5UGjl","../../static/json/*.json":"7DHOe","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5UGjl":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "instanceOfModelType", ()=>instanceOfModelType);
+function instanceOfModelType(object) {
+    let isModelType = "modelName" in object;
+    if (isModelType && "targets" in object) {
+        let i = 0;
+        while(isModelType && i < object.targets.length){
+            isModelType = isModelType && "position" in object.targets[i] && "x" in object.targets[i].position && "y" in object.targets[i].position && "z" in object.targets[i].position;
+            i++;
+        }
+    }
+    return isModelType;
+}
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
 };
-document.querySelector("model-viewer").addEventListener("progress", onProgress);
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
 
-},{}]},["9SXn1","7VQOF"], "7VQOF", "parcelRequire94c2")
+},{}],"7DHOe":[function(require,module,exports) {
+const _temp0 = require("./cargo.json");
+module.exports = {
+    "cargo": _temp0
+};
 
-//# sourceMappingURL=index.490c95fe.js.map
+},{"./cargo.json":"2SGQG"}],"2SGQG":[function(require,module,exports) {
+module.exports = JSON.parse('{"modelName":"cargo/cargo ship.glb","environment":"cargo/aircraft_workshop_01_1k.hdr","skybox":"true","poster":"cargo/poster.webp","hotspots":[{"label":"H\xe9lice","position":{"x":-0.42,"y":-0.1,"z":0.46},"normal":{"x":0,"y":0,"z":1},"orbit":{"x":0,"y":90,"z":0},"content":"Avec cette h\xe9lice, le bateau peut avancer."},{"label":"Conteneurs","position":{"x":0,"y":0.11,"z":0.45},"orbit":{"x":0,"y":90,"z":0},"content":"Les conteneurs permettent de transporter de la marchandise. \\n Ils peuvent contenir plusieurs tonnes de marchandise. \\n C\'est le moyen le plus r\xe9pandu pour transporter de grosses quantit\xe9s sur de longues distances."},{"position":{"x":0.1,"y":-0.07,"z":0.48},"normal":{"x":0,"y":0,"z":1},"orbit":{"x":0,"y":100,"z":0},"content":"La coque permet au bateau de ne pas couler"}]}');
+
+},{}],"lwyQj":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _hotspot = require("./Hotspot");
+var _hotspotDefault = parcelHelpers.interopDefault(_hotspot);
+var _vector3 = require("./Vector3");
+var _vector3Default = parcelHelpers.interopDefault(_vector3);
+class Model {
+    constructor(json){
+        this.modelName = json.modelName;
+        this.hotspots = [];
+        json.hotspots.forEach((target)=>{
+            this.hotspots.push(new (0, _hotspotDefault.default)((0, _vector3Default.default).fromJSON(target.position), target.normal ? (0, _vector3Default.default).fromJSON(target.normal) : null, target.orbit ? (0, _vector3Default.default).fromJSON(target.orbit) : null, target.target ? (0, _vector3Default.default).fromJSON(target.target) : null, target.label, target.content));
+        });
+        this.poster = json.poster;
+        this.arIcon = json.arIcon;
+        this.arPrompt = json.arPrompt;
+        this.environment = json.environment;
+        this.skybox = json.skybox == "true";
+        this.animation = json.animation;
+    }
+    createModelViewer() {
+        const mv = document.createElement("model-viewer");
+        mv.setAttribute("bounds", "tight");
+        mv.setAttribute("enable-pan", "");
+        mv.setAttribute("shadow-intensity", "1");
+        // Load model
+        mv.setAttribute("src", this.modelName);
+        // Enable AR
+        mv.setAttribute("ar", "");
+        mv.setAttribute("ar-modes", "webxr scene-viewer quick-look");
+        // AR for iOS
+        mv.setAttribute("quick-look-browsers", "safari, chrome");
+        if (this.iosSrc) mv.setAttribute("ios-src", this.iosSrc);
+        // Camera Controls
+        mv.setAttribute("camera-controls", "");
+        // Set poster
+        if (this.poster) mv.setAttribute("poster", this.poster);
+        // Set environment and skybox
+        if (this.environment) {
+            mv.setAttribute("environment-image", this.environment);
+            if (this.environment != "neutral" && this.skybox) mv.setAttribute("skybox-image", this.environment);
+        }
+        return mv;
+    }
+    toHTML() {
+        const mv = this.createModelViewer();
+        const hotspots = this.getHotspots(mv);
+        hotspots.forEach((hs)=>{
+            mv.appendChild(hs);
+        });
+        mv.appendChild(this.ARButton("View in your space"));
+        mv.appendChild(this.ARPrompt());
+        mv.appendChild(this.progressBar());
+        return mv;
+    }
+    ARButton(text) {
+        const imgSrc = this.arIcon ? this.arIcon : `${globalThis.defaultRessourcesPath}/ar_icon.png`;
+        const btn = document.createElement("button");
+        btn.setAttribute("id", "ar-button");
+        btn.setAttribute("slot", "ar-button");
+        btn.setAttribute("style", `background-image: url(${imgSrc});`);
+        btn.innerText = text;
+        return btn;
+    }
+    addNoARButton(text) {
+        return `<button id="ar-failure">
+        ${text}
+      </button>`;
+    }
+    getHotspots(modelViewer) {
+        const hotspots = [];
+        this.hotspots.forEach((target)=>{
+            hotspots.push(target.toHTML(modelViewer));
+        });
+        return hotspots;
+    }
+    ARPrompt() {
+        const src = this.arPrompt ? this.arPrompt : `${globalThis.defaultRessourcesPath}/ar_hand_prompt.png`;
+        const prompt = document.createElement("div");
+        prompt.setAttribute("id", "ar-prompt");
+        const img = document.createElement("img");
+        img.setAttribute("src", src);
+        prompt.appendChild(img);
+        return prompt;
+    }
+    progressBar() {
+        const progressBar = document.createElement("div");
+        progressBar.classList.add("progress-bar");
+        progressBar.classList.add("hide");
+        progressBar.setAttribute("slot", "progress-bar");
+        const updateBar = document.createElement("div");
+        updateBar.classList.add("update-bar");
+        progressBar.appendChild(updateBar);
+        return progressBar;
+    }
+}
+exports.default = Model;
+
+},{"./Hotspot":"dS52v","./Vector3":"hZaYN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dS52v":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sidepanel = require("./Sidepanel");
+var _sidepanelDefault = parcelHelpers.interopDefault(_sidepanel);
+class Hotspot {
+    static counter = 0;
+    constructor(position, normal, orbit, target, label, content){
+        this.position = position;
+        this.normal = normal;
+        this.label = label;
+        this.orbit = orbit;
+        this.target = target;
+        this.slot = Hotspot.counter++;
+        this.content = content;
+    }
+    toHTML(parent) {
+        const btn = document.createElement("button");
+        btn.classList.add("Hotspot");
+        btn.setAttribute("slot", `hotspot-${this.slot}`);
+        btn.setAttribute("data-position", this.position.toStringDim());
+        if (this.normal) btn.setAttribute("data-normal", this.normal.toStringDim());
+        btn.setAttribute("data-visibility-attribute", "visible");
+        if (this.orbit) {
+            btn.setAttribute("data-orbit", this.orbit.toStringAngle());
+            btn.setAttribute("data-target", (this.target ? this.target : this.position).toStringDim());
+            btn.addEventListener("click", function displayContent(event) {
+                const modelViewer = document.querySelector("model-viewer");
+                modelViewer.setAttribute("camera-target", event.target.getAttribute("data-target"));
+                modelViewer.setAttribute("camera-orbit", event.target.getAttribute("data-orbit"));
+            });
+        }
+        if (this.label) {
+            const label = document.createElement("div");
+            label.innerText = this.label;
+            label.classList.add("HotspotAnnotation");
+            btn.appendChild(label);
+        }
+        if (this.content) {
+            new (0, _sidepanelDefault.default)(this.content, this.slot, parent);
+            btn.addEventListener("click", function displayContent(event) {
+                const id = this.slot;
+                (0, _sidepanelDefault.default).showSidepanel(id);
+            });
+        }
+        return btn;
+    }
+}
+exports.default = Hotspot;
+
+},{"./Sidepanel":"8vxsk","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8vxsk":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _hotspot = require("./Hotspot");
+var _hotspotDefault = parcelHelpers.interopDefault(_hotspot);
+class Sidepanel {
+    constructor(content, slot, parent){
+        this.content = content;
+        this.slot = slot;
+        this.addContentAsSidepanel(parent);
+    }
+    addContentAsSidepanel(parent) {
+        const sidepanel = document.createElement("div");
+        sidepanel.classList.add("sidepanel");
+        sidepanel.id = `content-hotspot-${this.slot}`;
+        sidepanel.addEventListener("click", (event)=>Sidepanel.hideAllSidepanels());
+        const btn = document.createElement("a");
+        btn.classList.add("closebtn");
+        btn.addEventListener("click", (event)=>Sidepanel.hideAllSidepanels());
+        btn.href = "javascript: void(0)";
+        btn.innerText = "\xd7";
+        sidepanel?.appendChild(btn);
+        this.addArrows(sidepanel);
+        const p = document.createElement("p");
+        p.innerText = this.content;
+        sidepanel?.appendChild(p);
+        parent.appendChild(sidepanel);
+    }
+    addArrows(sidepanel) {
+        if (this.slot != (0, _hotspotDefault.default).counter - 1) {
+            const right = document.createElement("a");
+            right.classList.add("rightarrow");
+            right.addEventListener("click", (event)=>Sidepanel.Next(event));
+            right.href = "javascript: void(0)";
+            right.innerText = "\u2192";
+            sidepanel?.appendChild(right);
+        }
+        if (this.slot != 0) {
+            const left = document.createElement("a");
+            left.classList.add("leftarrow");
+            left.addEventListener("click", (event)=>Sidepanel.Prev(event));
+            left.href = "javascript: void(0)";
+            left.innerText = "\u2190";
+            sidepanel?.appendChild(left);
+        }
+    }
+    static Next(event) {
+        event.stopPropagation();
+        const elmt = event.target;
+        const id = elmt?.parentElement?.getAttribute("id")?.split("-").pop();
+        const hotspot = document.querySelector(`button[slot="hotspot-${+id + 1}"]`);
+        if (hotspot) hotspot.click();
+    }
+    static Prev(event) {
+        event.stopPropagation();
+        const elmt = event.target;
+        const id = elmt?.parentElement?.getAttribute("id")?.split("-").pop();
+        const hotspot = document.querySelector(`button[slot="hotspot-${+id - 1}"]`);
+        if (hotspot) hotspot.click();
+    }
+    static hideAllSidepanels() {
+        const sidepanels = document.querySelectorAll(".show");
+        Array.from(sidepanels).forEach((element)=>{
+            if (element) element.classList.remove("show");
+        });
+    }
+    static showSidepanel(id) {
+        const panel = document.getElementById(`content-${id}`);
+        const show = panel && !panel.classList.contains("show");
+        Sidepanel.hideAllSidepanels();
+        if (show) panel.classList.add("show");
+    }
+}
+exports.default = Sidepanel;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./Hotspot":"dS52v"}],"hZaYN":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class Vector3 {
+    constructor(x, y, z){
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    static fromJSON({ x , y , z  }) {
+        return new Vector3(x, y, z);
+    }
+    getX() {
+        return this.x;
+    }
+    getY() {
+        return this.y;
+    }
+    getZ() {
+        return this.z;
+    }
+    setX(x) {
+        this.x = x;
+        return this;
+    }
+    setY(y) {
+        this.y = y;
+        return this;
+    }
+    setZ(z) {
+        this.z = z;
+        return this;
+    }
+    toStringDim() {
+        return `${this.x}m ${this.y}m ${this.z}m`;
+    }
+    toStringAngle() {
+        return `${this.x}deg ${this.y}deg ${this.z}m`;
+    }
+}
+exports.default = Vector3;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"cJRl7":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _json = require("../../../static/json/*.json");
+class Route {
+    static defaultRoute = "cargo";
+    static validRoute(id) {
+        return id && _json[id] != null;
+    }
+    static chooseRoute() {
+        const route = Route.getPathname();
+        if (Route.validRoute(route)) return route;
+        else if (Route.hasName() && Route.validRoute(Route.getName())) return Route.getName();
+        else return Route.defaultRoute;
+    }
+    static getName() {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        return urlParams.get("name");
+    }
+    static hasName() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.has("name");
+    }
+    static getPathname() {
+        return window.location.pathname.split("/").pop();
+    }
+}
+exports.default = Route;
+
+},{"../../../static/json/*.json":"7DHOe","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["g9YSt","7FMHY"], "7FMHY", "parcelRequire94c2")
+
+//# sourceMappingURL=index.9ec2cfcb.js.map
