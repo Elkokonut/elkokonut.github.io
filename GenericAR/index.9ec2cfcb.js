@@ -550,6 +550,10 @@ function displayModel(id) {
 }
 function main() {
     globalThis.defaultRessourcesPath = "default";
+    // First we get the viewport height and we multiple it by 1% to get a value for a vh unit
+    let vh = window.innerHeight * 0.01;
+    // Then we set the value in the --vh custom property to the root of the document
+    document.documentElement.style.setProperty("--vh", `${vh}px`);
     displayModel((0, _routeDefault.default).chooseRoute());
 }
 function closeNav() {
@@ -658,13 +662,15 @@ module.exports = {
 };
 
 },{"./cargo.json":"2SGQG"}],"2SGQG":[function(require,module,exports) {
-module.exports = JSON.parse('{"modelName":"cargo/cargo ship.glb","environment":"cargo/aircraft_workshop_01_1k.hdr","skybox":"true","poster":"cargo/poster.webp","hotspots":[{"label":"H\xe9lice","position":{"x":-0.42,"y":-0.1,"z":0.46},"normal":{"x":0,"y":0,"z":1},"orbit":{"x":0,"y":90,"z":0},"content":"Avec cette h\xe9lice, le bateau peut avancer."},{"label":"Conteneurs","position":{"x":0,"y":0.11,"z":0.45},"orbit":{"x":0,"y":90,"z":0},"content":"Les conteneurs permettent de transporter de la marchandise. \\n Ils peuvent contenir plusieurs tonnes de marchandise. \\n C\'est le moyen le plus r\xe9pandu pour transporter de grosses quantit\xe9s sur de longues distances."},{"position":{"x":0.1,"y":-0.07,"z":0.48},"normal":{"x":0,"y":0,"z":1},"orbit":{"x":0,"y":100,"z":0},"content":"La coque permet au bateau de ne pas couler"}]}');
+module.exports = JSON.parse('{"modelName":"cargo/cargo ship.glb","environment":"cargo/aircraft_workshop_01_1k.hdr","skybox":"true","poster":"cargo/poster.webp","hotspots":[{"label":"H\xe9lice","position":{"x":-0.42,"y":-0.1,"z":0.46},"normal":{"x":0,"y":0,"z":1},"orbit":{"x":-90,"y":90,"z":0},"content":"Avec cette h\xe9lice, le bateau peut avancer."},{"label":"Conteneurs","position":{"x":0,"y":0.11,"z":0.45},"orbit":{"x":20,"y":70,"z":0},"content":"Les conteneurs permettent de transporter de la marchandise. \\n Ils peuvent contenir plusieurs tonnes de marchandise. \\n C\'est le moyen le plus r\xe9pandu pour transporter de grosses quantit\xe9s sur de longues distances."},{"position":{"x":0.1,"y":-0.07,"z":0.48},"normal":{"x":0,"y":0,"z":1},"orbit":{"x":-20,"y":100,"z":0},"target":{"x":-0.1,"y":0,"z":0.3},"content":"La coque permet au bateau de ne pas couler"}]}');
 
 },{}],"lwyQj":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _hotspot = require("./Hotspot");
 var _hotspotDefault = parcelHelpers.interopDefault(_hotspot);
+var _sidepanel = require("./Sidepanel");
+var _sidepanelDefault = parcelHelpers.interopDefault(_sidepanel);
 var _vector3 = require("./Vector3");
 var _vector3Default = parcelHelpers.interopDefault(_vector3);
 class Model {
@@ -711,10 +717,21 @@ class Model {
         hotspots.forEach((hs)=>{
             mv.appendChild(hs);
         });
+        if ((0, _hotspotDefault.default).counter > 0) mv.appendChild(this.JourneyButton("\uD83D\uDE80 Start your journey!"));
         mv.appendChild(this.ARButton("View in your space"));
         mv.appendChild(this.ARPrompt());
         mv.appendChild(this.progressBar());
         return mv;
+    }
+    JourneyButton(text) {
+        const btn = document.createElement("button");
+        btn.innerText = text;
+        btn.classList.add("circuit-button");
+        btn.innerText = text;
+        btn.addEventListener("click", (event)=>{
+            (0, _sidepanelDefault.default).showSidepanel("hotspot-0");
+        });
+        return btn;
     }
     ARButton(text) {
         const imgSrc = this.arIcon ? this.arIcon : `${globalThis.defaultRessourcesPath}/ar_icon.png`;
@@ -759,7 +776,7 @@ class Model {
 }
 exports.default = Model;
 
-},{"./Hotspot":"dS52v","./Vector3":"hZaYN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dS52v":[function(require,module,exports) {
+},{"./Hotspot":"dS52v","./Vector3":"hZaYN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./Sidepanel":"8vxsk"}],"dS52v":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _sidepanel = require("./Sidepanel");
@@ -872,14 +889,24 @@ class Sidepanel {
     static hideAllSidepanels() {
         const sidepanels = document.querySelectorAll(".show");
         Array.from(sidepanels).forEach((element)=>{
-            if (element) element.classList.remove("show");
+            if (element) {
+                element.classList.remove("transition");
+                element.classList.remove("show");
+            }
         });
+        document.querySelector(".circuit-button").classList.remove("hide");
+        return sidepanels.length == 0;
     }
     static showSidepanel(id) {
         const panel = document.getElementById(`content-${id}`);
         const show = panel && !panel.classList.contains("show");
-        Sidepanel.hideAllSidepanels();
-        if (show) panel.classList.add("show");
+        const transition = Sidepanel.hideAllSidepanels();
+        const journeyBtn = document.querySelector(".circuit-button");
+        if (show) {
+            panel.classList.add("show");
+            if (transition) panel.classList.add("transition");
+            journeyBtn.classList.add("hide");
+        }
     }
 }
 exports.default = Sidepanel;
