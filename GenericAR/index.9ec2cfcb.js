@@ -609,7 +609,7 @@ function loadJSON(id) {
 }
 exports.default = loadJSON;
 
-},{"./interface/modelType":"5UGjl","../../static/json/*.json":"7DHOe","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5UGjl":[function(require,module,exports) {
+},{"./interface/modelType":"5UGjl","../../static/json/*.json":"5uP96","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5UGjl":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "instanceOfModelType", ()=>instanceOfModelType);
@@ -655,34 +655,43 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"7DHOe":[function(require,module,exports) {
-const _temp0 = require("./cargo.json");
+},{}],"5uP96":[function(require,module,exports) {
+const _temp0 = require("./bathroom.json");
+const _temp1 = require("./cargo.json");
+const _temp2 = require("./space.json");
 module.exports = {
-    "cargo": _temp0
+    "bathroom": _temp0,
+    "cargo": _temp1,
+    "space": _temp2
 };
 
-},{"./cargo.json":"2SGQG"}],"2SGQG":[function(require,module,exports) {
-module.exports = JSON.parse('{"modelName":"cargo/cargo ship.glb","environment":"cargo/aircraft_workshop_01_1k.hdr","skybox":"true","poster":"cargo/poster.webp","hotspots":[{"label":"H\xe9lice","position":{"x":-0.42,"y":-0.1,"z":0.46},"normal":{"x":0,"y":0,"z":1},"orbit":{"x":-90,"y":90,"z":0},"content":"Avec cette h\xe9lice, le bateau peut avancer."},{"label":"Conteneurs","position":{"x":0,"y":0.11,"z":0.45},"orbit":{"x":20,"y":70,"z":0},"content":"Les conteneurs permettent de transporter de la marchandise. \\n Ils peuvent contenir plusieurs tonnes de marchandise. \\n C\'est le moyen le plus r\xe9pandu pour transporter de grosses quantit\xe9s sur de longues distances."},{"position":{"x":0.1,"y":-0.07,"z":0.48},"normal":{"x":0,"y":0,"z":1},"orbit":{"x":-20,"y":100,"z":0},"target":{"x":-0.1,"y":0,"z":0.3},"content":"La coque permet au bateau de ne pas couler"}]}');
+},{"./bathroom.json":"8LGyY","./cargo.json":"2SGQG","./space.json":"hfU66"}],"8LGyY":[function(require,module,exports) {
+module.exports = JSON.parse('{"modelName":"bathroom/bathroom.glb","iosSrc":"bathroom/bathroom.usdz","poster":"bathroom/bathroom.png","environment":"neutral"}');
+
+},{}],"2SGQG":[function(require,module,exports) {
+module.exports = JSON.parse('{"modelName":"cargo/cargo ship.glb","environment":"cargo/aircraft_workshop_01_1k.hdr","iosSrc":"cargo/Cargo_Ship.usdz","skybox":"true","poster":"cargo/poster.webp","hotspots":[{"label":"H\xe9lice","position":{"x":-0.42,"y":-0.1,"z":0.46},"normal":{"x":0,"y":0,"z":1},"orbit":{"x":-90,"y":90,"z":0},"content":"Avec cette h\xe9lice, le bateau peut avancer."},{"label":"Conteneurs","position":{"x":0,"y":0.11,"z":0.45},"orbit":{"x":20,"y":70,"z":0},"content":"Les conteneurs permettent de transporter de la marchandise. \\n Ils peuvent contenir plusieurs tonnes de marchandise. \\n C\'est le moyen le plus r\xe9pandu pour transporter de grosses quantit\xe9s sur de longues distances."},{"position":{"x":0.1,"y":-0.07,"z":0.48},"normal":{"x":0,"y":0,"z":1},"orbit":{"x":-20,"y":100,"z":0},"target":{"x":-0.1,"y":0,"z":0.3},"content":"La coque permet au bateau de ne pas couler"}]}');
+
+},{}],"hfU66":[function(require,module,exports) {
+module.exports = JSON.parse('{"modelName":"space/space.gltf","iosSrc":"space/space.usdz","hotspots":[{"label":"Soleil","position":{"x":0.2,"y":0,"z":-5.6},"normal":{"x":0,"y":0,"z":1},"orbit":{"x":-90,"y":90,"z":0},"content":"Centre du syst\xe8me"}]}');
 
 },{}],"lwyQj":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _hotspot = require("./Hotspot");
 var _hotspotDefault = parcelHelpers.interopDefault(_hotspot);
-var _sidepanel = require("./Sidepanel");
-var _sidepanelDefault = parcelHelpers.interopDefault(_sidepanel);
 var _vector3 = require("./Vector3");
 var _vector3Default = parcelHelpers.interopDefault(_vector3);
 class Model {
     constructor(json){
         this.modelName = json.modelName;
         this.hotspots = [];
-        json.hotspots.forEach((target)=>{
+        json.hotspots?.forEach((target)=>{
             this.hotspots.push(new (0, _hotspotDefault.default)((0, _vector3Default.default).fromJSON(target.position), target.normal ? (0, _vector3Default.default).fromJSON(target.normal) : null, target.orbit ? (0, _vector3Default.default).fromJSON(target.orbit) : null, target.target ? (0, _vector3Default.default).fromJSON(target.target) : null, target.label, target.content));
         });
         this.poster = json.poster;
         this.arIcon = json.arIcon;
         this.arPrompt = json.arPrompt;
+        this.iosSrc = json.iosSrc;
         this.environment = json.environment;
         this.skybox = json.skybox == "true";
         this.animation = json.animation;
@@ -727,15 +736,17 @@ class Model {
         const btn = document.createElement("button");
         btn.innerText = text;
         btn.classList.add("circuit-button");
+        btn.classList.add("hide");
         btn.innerText = text;
         btn.addEventListener("click", (event)=>{
-            (0, _sidepanelDefault.default).showSidepanel("hotspot-0");
+            document.querySelector("button[slot='hotspot-0']")?.click();
         });
         return btn;
     }
     ARButton(text) {
         const imgSrc = this.arIcon ? this.arIcon : `${globalThis.defaultRessourcesPath}/ar_icon.png`;
         const btn = document.createElement("button");
+        btn.classList.add("hide");
         btn.setAttribute("id", "ar-button");
         btn.setAttribute("slot", "ar-button");
         btn.setAttribute("style", `background-image: url(${imgSrc});`);
@@ -776,7 +787,7 @@ class Model {
 }
 exports.default = Model;
 
-},{"./Hotspot":"dS52v","./Vector3":"hZaYN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./Sidepanel":"8vxsk"}],"dS52v":[function(require,module,exports) {
+},{"./Hotspot":"dS52v","./Vector3":"hZaYN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"dS52v":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _sidepanel = require("./Sidepanel");
@@ -795,6 +806,7 @@ class Hotspot {
     toHTML(parent) {
         const btn = document.createElement("button");
         btn.classList.add("Hotspot");
+        btn.classList.add("hide");
         btn.setAttribute("slot", `hotspot-${this.slot}`);
         btn.setAttribute("data-position", this.position.toStringDim());
         if (this.normal) btn.setAttribute("data-normal", this.normal.toStringDim());
@@ -806,6 +818,7 @@ class Hotspot {
                 const modelViewer = document.querySelector("model-viewer");
                 modelViewer.setAttribute("camera-target", event.target.getAttribute("data-target"));
                 modelViewer.setAttribute("camera-orbit", event.target.getAttribute("data-orbit"));
+                modelViewer.zoom(-100);
             });
         }
         if (this.label) {
@@ -821,6 +834,10 @@ class Hotspot {
                 (0, _sidepanelDefault.default).showSidepanel(id);
             });
         }
+        if (this.content || this.orbit) btn.addEventListener("click", function stopInteractionPrompt(event) {
+            const modelViewer = document.querySelector("model-viewer");
+            modelViewer.setAttribute("interaction-prompt", "none");
+        });
         return btn;
     }
 }
@@ -983,6 +1000,6 @@ class Route {
 }
 exports.default = Route;
 
-},{"../../../static/json/*.json":"7DHOe","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["g9YSt","7FMHY"], "7FMHY", "parcelRequire94c2")
+},{"../../../static/json/*.json":"5uP96","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["g9YSt","7FMHY"], "7FMHY", "parcelRequire94c2")
 
 //# sourceMappingURL=index.9ec2cfcb.js.map
